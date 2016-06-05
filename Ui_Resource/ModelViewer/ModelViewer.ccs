@@ -1,0 +1,12 @@
+<Solution>
+  <PropertyGroup Name="ModelViewer" Version="2.3.0.1" Type="CocosStudio" />
+  <SolutionFolder>
+    <Group ctype="ResourceGroup">
+      <RootFolder Name=".">
+        <Project Name="ModelViewSelect.csd" Type="Scene" />
+        <Image Name="Button_Normal.png" />
+        <Image Name="arrow.png" />
+      </RootFolder>
+    </Group>
+  </SolutionFolder>
+</Solution>
