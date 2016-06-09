@@ -1,27 +1,61 @@
-#include "ViewTarget.h"
-#include "UiHandler.h"
-#include "IndexFileParser.h"
+#include "Entity.h"
 
 USING_NS_CC;
 
-bool ViewTarget::init()
-{
-	return true;
-}
-
-ViewTarget::ViewTarget():
-_orginDistance(0.0f)
-, _MaxAnimFrame(0)
+Entity::Entity(): _TotalFrames(0)
 {
 
 }
 
-ViewTarget::~ViewTarget()
+Entity::~Entity()
 {
 
 }
 
-bool ViewTarget::load(ResData& fileIdx)
+// Entity* Entity::create(const string& modelPath, const string& animPath, const string& texPath)
+// {
+// 	Entity *pRet = new(std::nothrow) Entity();
+// 	if (pRet && pRet->load(modelPath, animPath, texPath))
+// 	{
+// 		pRet->autorelease();
+// 		return pRet;
+// 	}
+// 	else
+// 	{
+// 		delete pRet;
+// 		pRet = nullptr;
+// 		return nullptr;
+// 	}
+// }
+
+Entity* Entity::create(const EntityData& data)
+{
+	Entity *pRet = new(std::nothrow) Entity();
+	if (pRet && pRet->load(data))
+	{
+		pRet->autorelease();
+		return pRet;
+	}
+	else
+	{
+		delete pRet;
+		pRet = nullptr;
+		return nullptr;
+	}
+}
+
+// bool Entity::load(const string& modelPath, const string& animPath, const string& texPath)
+// {
+// 	auto newModelData = IndexFileParser::loadNewModel(modelPath,animPath,texPath);
+// 	if (newModelData != nullptr){
+// 		load(*newModelData);
+// 		return true;
+// 	}
+// 
+// 	return false;
+// }
+
+bool Entity::load(const EntityData& fileIdx)
 {
 	if (fileIdx.texFile.empty())
 		_Sprite3d = Sprite3D::create(fileIdx.modelFile);
@@ -36,31 +70,15 @@ bool ViewTarget::load(ResData& fileIdx)
 		if (animation)
 		{
 			auto animate = Animate3D::create(animation);
-			_AnimList.insert(IndexFileParser::s_DefaultAnim, animate);
-			_MaxAnimFrame = animation->getDuration() * IndexFileParser::sFrameRate;
-			UiHandler::getInstance()->setAnimName(IndexFileParser::s_DefaultAnim, 0, _MaxAnimFrame);
+			_AnimList.insert(DataHandler::s_DefaultAnim, animate);
+			_TotalFrames = animation->getDuration() * DataHandler::sFrameRate;
+			
 			_Sprite3d->runAction(RepeatForever::create(animate));
 
 			parseAnimSection(fileIdx,animation);
 		}
 
-		AABB aabb = _Sprite3d->getAABB();
-		_obbt = OBB(aabb);
-
-		Vec3 corners[8];
-		aabb.getCorners(corners);
-		//temporary method, replace it
-		if (abs(corners[3].x) == 99999.0f && abs(corners[3].y) == 99999.0f && abs(corners[3].z) == 99999.0f)
-		{
-			_orginCenter = Vec3(0.0f, 0.0f, 0.0f);
-			_orginDistance = 100.0f;
-		}
-		else
-		{
-			float radius = (corners[0] - corners[5]).length();
-			_orginCenter = aabb.getCenter();
-			_orginDistance = radius;
-		}
+		_obbt = OBB(_Sprite3d->getAABB());
 
 		_Sprite3d->setCameraMask((unsigned short)CameraFlag::USER1);
 	}
@@ -68,12 +86,7 @@ bool ViewTarget::load(ResData& fileIdx)
 	return true;
 }
 
-Sprite3D* ViewTarget::getNode() const
-{
-	return _Sprite3d;
-}
-
-void ViewTarget::switchAnim(int step)
+void Entity::switchAnim(int step)
 {
 	if (step == 0)
 		return;
@@ -82,35 +95,26 @@ void ViewTarget::switchAnim(int step)
 		return;
 
 	assert(step == 1 || step == -1);
-	if (step > 0 )
-	{
-		_currAnim++;
-		if (_currAnim == _AnimList.end()){
-			_currAnim = _AnimList.begin();
+	auto itr = _currAnim;
+	if (step > 0){
+		if ( ++_currAnim == _AnimList.end()){
+			_currAnim = itr;
 		}		
 	}
 	else {
 		if (_currAnim == _AnimList.begin()){
-//			_currAnim = (--_AnimList.end());
+//			_currAnim = itr;
 		}
-//		else
-//			--_currAnim;
+		else{
+			--_currAnim;
+		}
 	}
 
 	_Sprite3d->stopAllActions();
 	_Sprite3d->runAction(RepeatForever::create(_currAnim->second));
-
-	if (_currAnim == _AnimList.begin()){
-		UiHandler::getInstance()->setAnimName(_currAnim->first, 0,_MaxAnimFrame);
-	}
-	else{
-		auto animTarget = IndexFileParser::findAnim(_name,_currAnim->first);
-		if (animTarget != nullptr)
-			UiHandler::getInstance()->setAnimName(_currAnim->first, animTarget->start, animTarget->end);
-	}
 }
 
-void ViewTarget::switchAnim(const std::string& animName)
+void Entity::switchAnim(const std::string& animName)
 {
 	if (_AnimList.size() == 1){
 		_currAnim = _AnimList.begin();
@@ -123,12 +127,9 @@ void ViewTarget::switchAnim(const std::string& animName)
 			_Sprite3d->stopAllActions();
 			_Sprite3d->runAction(RepeatForever::create(_currAnim->second));
 
-			if (itr->first == IndexFileParser::s_DefaultAnim)
-				UiHandler::getInstance()->setAnimName(_currAnim->first,0,_MaxAnimFrame);
-			else{
-				auto animTarget = IndexFileParser::findAnim(_name, animName);
-				if (animTarget != nullptr)
-					UiHandler::getInstance()->setAnimName(animName, animTarget->start, animTarget->end);
+			//TODO: should set by viewer
+			if (itr->first == DataHandler::s_DefaultAnim){
+				//TODO:
 			}
 
 			break;
@@ -136,7 +137,7 @@ void ViewTarget::switchAnim(const std::string& animName)
 	}
 }
 
-void ViewTarget::parseAnimSection(const ResData& animFile, Animation3D* anim)
+void Entity::parseAnimSection(const EntityData& animFile, Animation3D* anim)
 {
 	for (auto it = animFile.animList.begin(); it != animFile.animList.end(); ++it){
 		auto animate = Animate3D::createWithFrames(anim, it->start, it->end);
@@ -146,24 +147,9 @@ void ViewTarget::parseAnimSection(const ResData& animFile, Animation3D* anim)
 	_currAnim = _AnimList.begin();
 }
 
-const std::string& ViewTarget::getCurrAnimName() const
+void Entity::recreateCurrentAnim(int from, int to)
 {
-	return _currAnim->first;
-}
-
-const std::string& ViewTarget::getTitle() const
-{
-	return _name;
-}
-
-const std::string& ViewTarget::getModelName() const
-{
-	return _modelName;
-}
-
-void ViewTarget::recreateCurrentAnim(int from, int to)
-{
-	auto viewData = IndexFileParser::findViewDate(_name);
+	auto viewData = DataHandler::findViewDate(_name);
 	std::string animFilePath = viewData->animFile;
 	if (animFilePath.empty())	{
 		animFilePath = viewData->modelFile;
@@ -175,7 +161,7 @@ void ViewTarget::recreateCurrentAnim(int from, int to)
 	_Sprite3d->stopAllActions();
 	_Sprite3d->runAction(RepeatForever::create(animate));
 
-	auto animData = IndexFileParser::findAnim(_name, _currAnim->first);
+	auto animData = DataHandler::findAnim(_name, _currAnim->first);
 	animData->start = from;
 	animData->end = to;
 	_AnimList.erase(_currAnim);
@@ -183,34 +169,31 @@ void ViewTarget::recreateCurrentAnim(int from, int to)
 	_currAnim = _AnimList.find(animData->name);
 }
 
-void ViewTarget::addNewAnimSection(const std::string& newAnimName)
+void Entity::addNewAnimSection(const std::string& newAnimName)
 {
 	//For display
 	auto _currAnimName = _currAnim->first;
-	auto defaultAnim = _AnimList.find(IndexFileParser::s_DefaultAnim);
+	auto defaultAnim = _AnimList.find(DataHandler::s_DefaultAnim);
 	auto newAnim = defaultAnim->second->clone();
 	_AnimList.insert(newAnimName, newAnim);		
 	_currAnim = _AnimList.find(_currAnimName);
 
 	//For data
-	IndexFileParser::findViewDate(_name)->animList.push_back(ResData::AnimFrames(newAnimName,0,_MaxAnimFrame));
-
-	//For UI
-	UiHandler::getInstance()->addAnimToViewList(newAnimName);
+	DataHandler::findViewDate(_name)->animList.push_back(EntityData::AnimFrames(newAnimName,0,_TotalFrames));
 }
 
-bool ViewTarget::removeCurrentAnim()
+bool Entity::removeCurrentAnim()
 {
 	if (_AnimList.size() <= 1)
 		return false;
 
 	auto currAnimName = _currAnim->first;
 	_AnimList.erase(_currAnim);
-	switchAnim(IndexFileParser::s_DefaultAnim);
+	switchAnim(DataHandler::s_DefaultAnim);
 	return true;
 }
 
-void ViewTarget::setDrawingBoundingBox(bool state)
+void Entity::setDrawingBoundingBox(bool state)
 {
 	if (state)
 	{
@@ -230,7 +213,7 @@ void ViewTarget::setDrawingBoundingBox(bool state)
 	}
 }
 
-void ViewTarget::update(float dt)
+void Entity::update(float dt)
 {
 	if (_drawDebug)
 	{
@@ -253,3 +236,4 @@ void ViewTarget::update(float dt)
 		_drawDebug->drawCube(corners, Color4F(0, 1, 0, 1));
 	}
 }
+

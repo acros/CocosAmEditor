@@ -10,6 +10,24 @@
     <Filter Include="src">
       <UniqueIdentifier>{bb6c862e-70e9-49d9-81b7-3829a6f50471}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Ui">
+      <UniqueIdentifier>{44a4db70-5ac9-49c7-a50d-deef827c78c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Viewer">
+      <UniqueIdentifier>{1953c266-7848-4275-b6bc-36c4f411780e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Entity">
+      <UniqueIdentifier>{0ba0031a-5b41-4c5c-9217-4cfe269ea50b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Utils">
+      <UniqueIdentifier>{087d9563-58b7-4a2f-930c-bd82abe54aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Entity\Data">
+      <UniqueIdentifier>{30d95822-5155-499a-8a58-a964d1a022a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Viewer\ViewMode">
+      <UniqueIdentifier>{c308c867-bbdf-4879-b3e7-2d065b69f4f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -18,20 +36,20 @@
     <ClCompile Include="..\Classes\AppDelegate.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\IndexFileParser.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\Classes\Ui\UiPage.cpp">
+      <Filter>src\Ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ModelViewer.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\Classes\Entity\Entity.cpp">
+      <Filter>src\Entity</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\UiHandler.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\Classes\Utils\DrawNode3D.cpp">
+      <Filter>src\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\ViewTarget.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\Classes\Utils\DataHandler.cpp">
+      <Filter>src\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\NodeDraw\DrawNode3D.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\Classes\Viewer\ModelViewer.cpp">
+      <Filter>src\Viewer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,20 +59,17 @@
     <ClInclude Include="..\Classes\AppDelegate.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\IndexFileParser.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\Classes\Ui\UiPage.h">
+      <Filter>src\Ui</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ModelViewer.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\Classes\Entity\Entity.h">
+      <Filter>src\Entity</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\UiHandler.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\Classes\Utils\DrawNode3D.h">
+      <Filter>src\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ViewTarget.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\NodeDraw\DrawNode3D.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\Classes\Viewer\ModelViewer.h">
+      <Filter>src\Viewer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

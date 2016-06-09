@@ -5,10 +5,10 @@
 
 using std::string;
 
-struct ResData{
+struct EntityData{
 	string name;
 	string modelFile;
-	string texFile;
+	string texFile;		//TODO: or material
 	string animFile;
 
 	struct AnimFrames{
@@ -21,22 +21,22 @@ struct ResData{
 	std::vector<AnimFrames>	animList;
 
 };
-typedef std::vector<ResData>	ResourceDataList;
+typedef std::vector<EntityData>	ResourceDataList;
 
 
-class IndexFileParser{
-protected:
-	IndexFileParser();
-	~IndexFileParser();
+class DataHandler{
 
 public:
-	static ResData*	loadNewModel(const std::string& filePath, const std::string& text = "");
+	DataHandler();
+	~DataHandler();
 
-	static ResourceDataList*	parseIndexFile(const std::string&	filePath);
+	static EntityData*				loadNewModel(const std::string& filePath, const std::string& animPath = "", const std::string& texPath = "");
+
+	static ResourceDataList*	deserializeFromFile(const std::string&	filePath);
 	static bool					serializeToFile();
 
-	static ResData::AnimFrames*	findAnim(const std::string&	modelName, const std::string& animName);
-	static ResData*				findViewDate(const std::string& modelName);
+	static EntityData::AnimFrames*	findAnim(const std::string&	modelName, const std::string& animName);
+	static EntityData*				findViewDate(const std::string& modelName);
 
 	static ResourceDataList		s_AnimFileData;
 	static const float			sFrameRate;

@@ -1,4 +1,4 @@
-#include "IndexFileParser.h"
+#include "DataHandler.h"
 #include "json/reader.h"
 #include "json/document.h"
 #include "json/writer.h"
@@ -7,15 +7,15 @@
 
 USING_NS_CC;
 
-const float IndexFileParser::sFrameRate = 30.f;
-const std::string IndexFileParser::s_DefaultAnim = "Default Animation";
-std::string IndexFileParser::_DataFileName = "config.json";
+const float DataHandler::sFrameRate = 30.f;
+const std::string DataHandler::s_DefaultAnim = "Default Animation";
+std::string DataHandler::_DataFileName = "config.json";
 
-bool IndexFileParser::_InSerializing = false;
+bool DataHandler::_InSerializing = false;
 
-ResourceDataList IndexFileParser::s_AnimFileData;
+ResourceDataList DataHandler::s_AnimFileData;
 
-ResourceDataList* IndexFileParser::parseIndexFile(const std::string& filePath)
+ResourceDataList* DataHandler::deserializeFromFile(const std::string& filePath)
 {
 	_DataFileName = filePath;
 
@@ -36,7 +36,7 @@ ResourceDataList* IndexFileParser::parseIndexFile(const std::string& filePath)
 		rapidjson::Value& nodeValue = na[i];
 
 		//Parse node context
-		ResData	t;
+		EntityData	t;
 		if (nodeValue.HasMember("model")){
 			t.modelFile = nodeValue["model"].GetString();
 		}
@@ -66,11 +66,10 @@ ResourceDataList* IndexFileParser::parseIndexFile(const std::string& filePath)
 // 			}
 // 		}
 
-		//////////////////////////////////////////////////////////////////////////
 		if (nodeValue.HasMember("sec") && nodeValue["sec"].IsObject()){
 			rapidjson::Value& secValue = nodeValue["sec"];
 			for (auto itr = secValue.MemberBegin(); itr != secValue.MemberEnd(); ++itr){
-				ResData::AnimFrames secFrame;
+				EntityData::AnimFrames secFrame;
 				secFrame.name = itr->name.GetString();
 				if (itr->value.IsArray()){
 					secFrame.start = itr->value[0u].GetInt();
@@ -79,7 +78,6 @@ ResourceDataList* IndexFileParser::parseIndexFile(const std::string& filePath)
 				t.animList.push_back(secFrame);
 			}
 		}
-		//////////////////////////////////////////////////////////////////////////
 
 
 		s_AnimFileData.push_back(t);
@@ -88,7 +86,7 @@ ResourceDataList* IndexFileParser::parseIndexFile(const std::string& filePath)
 	return &s_AnimFileData;
 }
 
-ResData::AnimFrames* IndexFileParser::findAnim(const std::string& modelName, const std::string& animName)
+EntityData::AnimFrames* DataHandler::findAnim(const std::string& modelName, const std::string& animName)
 {
 	auto itr = s_AnimFileData.begin();
 	for (; itr != s_AnimFileData.end(); ++itr)
@@ -108,7 +106,7 @@ ResData::AnimFrames* IndexFileParser::findAnim(const std::string& modelName, con
 	return nullptr;
 }
 
-ResData* IndexFileParser::findViewDate(const std::string& modelName)
+EntityData* DataHandler::findViewDate(const std::string& modelName)
 {
 	for (auto itr = s_AnimFileData.begin(); itr != s_AnimFileData.end(); ++itr)
 	{
@@ -120,17 +118,19 @@ ResData* IndexFileParser::findViewDate(const std::string& modelName)
 }
 
 
-ResData* IndexFileParser::loadNewModel(const std::string& filePath, const std::string& tex /*= ""*/)
+EntityData* DataHandler::loadNewModel(const std::string& filePath, const std::string& animPath, const std::string& tex /*= ""*/)
 {
-	ResData newData;
-
+	EntityData newData;
 	newData.name = filePath;
 
 	FileUtils::getInstance()->addSearchPath("data/" + filePath);
-	if (FileUtils::getInstance()->isFileExist(filePath + ".c3t")){
+	if (FileUtils::getInstance()->isFileExist(filePath)){
+		newData.modelFile = filePath;
+	}
+	else if (FileUtils::getInstance()->isFileExist(filePath + ".c3t")){
 		newData.modelFile = filePath + ".c3t";
 	}
-	if (FileUtils::getInstance()->isFileExist(filePath + ".c3b")){
+	else if (FileUtils::getInstance()->isFileExist(filePath + ".c3b")){
 		newData.modelFile = filePath + ".c3b";
 	}
 
@@ -141,14 +141,17 @@ ResData* IndexFileParser::loadNewModel(const std::string& filePath, const std::s
 	if (newData.modelFile.empty())
 		return nullptr;
 
-	newData.animFile = newData.modelFile;
+	if (animPath.empty())
+		newData.animFile = newData.modelFile;
+	else 
+		newData.animFile = animPath;
 
 	s_AnimFileData.push_back(newData);
 
 	return &(s_AnimFileData.back());
 }
 
-bool IndexFileParser::serializeToFile()
+bool DataHandler::serializeToFile()
 {
 	if (_InSerializing)
 		return false;

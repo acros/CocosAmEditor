@@ -1,5 +1,5 @@
 #include "AppDelegate.h"
-#include "ModelViewer.h"
+#include "Viewer/ModelViewer.h"
 
 USING_NS_CC;
 
@@ -32,24 +32,22 @@ void AppDelegate::initGLContextAttrs()
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
-    // initialize director
-    auto director = Director::getInstance();
+
+	auto director = Director::getInstance();
     auto glview = director->getOpenGLView();
     if(!glview) {
 //		Rect rec(0, 0, 480, 320);
 //		glview = GLViewImpl::createWithRect("Model Viewer",rec);
-		glview = GLViewImpl::create("Model Viewer");
+		glview = GLViewImpl::create("Cocos2d-x Model Viewer");
         director->setOpenGLView(glview);
     }
 
-    // turn on display FPS
     director->setDisplayStats(true);
-
-    // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
 
+
     // create a scene. it's an autorelease object
-    auto scene = ModelViewer::createScene(_modelFilePath);
+    auto scene = ModelViewer::create();
 	if (scene != nullptr)
 	{
 		director->runWithScene(scene);
