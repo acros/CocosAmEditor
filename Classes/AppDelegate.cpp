@@ -43,15 +43,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     director->setDisplayStats(true);
-    director->setAnimationInterval(1.0 / 60);
+    director->setAnimationInterval(float(1.0 / 60));
 
-
-    // create a scene. it's an autorelease object
     auto scene = ModelViewer::create();
 	if (scene != nullptr)
-	{
 		director->runWithScene(scene);
-	}
 
     return true;
 }

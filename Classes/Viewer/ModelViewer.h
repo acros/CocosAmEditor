@@ -19,6 +19,8 @@ public:
 	void initCamera();
 	void loadModel(ResourceDataList& animFileList);
 
+	Entity*	getTarget();
+	Camera*	getCamera()	{ return _camera; }
 
 	bool addViewTarget(const string& modelFilePath,const string& animFilePath,const string& texFilePath);
 	bool checkTargetNameLegal(const string& modelName);
@@ -36,6 +38,10 @@ public:
 	//Serialization
 	bool saveAll();
 
+	//Camera
+	void resetCamera();
+	void toggleDebugDraw();
+
 CC_CONSTRUCTOR_ACCESS:
     ModelViewer();
     virtual ~ModelViewer();
@@ -45,21 +51,19 @@ protected:
 	void onExit()override;
 
 	void initInput();
-	void toggleDebugDraw();
 
     void trackball(Vec3 & axis, float & angle, float p1x, float p1y, float p2x, float p2y );
     float tb_project_to_sphere( float r, float x, float y );
 
     void updateCameraTransform();
-    void resetCamera();
 
 	void updateCameraSet();
 
 	//Move this to ViewMode
-	void onTouchsMovedThis(const std::vector<Touch*> &touchs, Event *event);
-	void onMouseScrollThis(Event* event);
-	void onMouseMovedThis(Event* event);
-	void onKeyPressedThis(EventKeyboard::KeyCode keycode, Event *event);
+	void onTouchsMove(const std::vector<Touch*> &touchs, Event *event);
+	void onMouseScroll(Event* event);
+	void onMouseMove(Event* event);
+	void onKeyPressed(EventKeyboard::KeyCode keycode, Event *event);
 
 private:
 	bool _debugDraw;
@@ -68,11 +72,11 @@ private:
 	void updateUiAnimList();
 
 	//Ui
-	class UiPage*	_uiPage;
+	RefPtr<class UiPage>	_uiPage;
 
-	class ViewMode*	 _vm;
-	Camera*		_camera;
-	Layer*		_modelLayer;
+	RefPtr<ViewMode> _vm;
+	RefPtr<Camera>	_camera;
+	RefPtr<Layer>	_modelLayer;
 
 	//Camera set
 	float		_orginDistance;

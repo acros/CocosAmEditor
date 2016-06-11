@@ -1,6 +1,7 @@
 #include "ModelViewer.h"
 #include "Entity/Entity.h"
 #include "Ui/UiPage.h"
+#include "ViewMode/ViewMode.h"
 
 USING_NS_CC;
 
@@ -26,6 +27,8 @@ bool ModelViewer::init()
 		loadModel(*animFileData);
 	}
 
+	_vm = ViewMode::create(*this,ViewModeType::Normal);
+
 	initInput();
 
     return true;
@@ -34,20 +37,17 @@ bool ModelViewer::init()
 void ModelViewer::initInput()
 {
 	auto listenertouch = EventListenerTouchAllAtOnce::create();
-	listenertouch->onTouchesMoved = CC_CALLBACK_2(ModelViewer::onTouchsMovedThis, this);
+	listenertouch->onTouchesMoved = CC_CALLBACK_2(ModelViewer::onTouchsMove, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listenertouch, this);
 
 	auto listenermouse = EventListenerMouse::create();
-	listenermouse->onMouseScroll = CC_CALLBACK_1(ModelViewer::onMouseScrollThis, this);
-	listenermouse->onMouseMove = CC_CALLBACK_1(ModelViewer::onMouseMovedThis, this);
+	listenermouse->onMouseScroll = CC_CALLBACK_1(ModelViewer::onMouseScroll, this);
+	listenermouse->onMouseMove = CC_CALLBACK_1(ModelViewer::onMouseMove, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listenermouse, this);
 
 	auto listenerkeyboard = EventListenerKeyboard::create();
-	listenerkeyboard->onKeyPressed = CC_CALLBACK_2(ModelViewer::onKeyPressedThis, this);
+	listenerkeyboard->onKeyPressed = CC_CALLBACK_2(ModelViewer::onKeyPressed, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listenerkeyboard, this);
-
-// 	auto listenerOfUiEvent = EventListenerCustom::create(UiCustomEventData::sUiCustomEventName, CC_CALLBACK_1(ModelViewer::onUiCustomEvent, this));
-// 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listenerOfUiEvent, this);
 }
 
 void ModelViewer::loadModel(ResourceDataList& animFileList)
@@ -85,65 +85,26 @@ ModelViewer::ModelViewer()
 
 ModelViewer::~ModelViewer()
 {
-    if (_modelLayer)
-        _modelLayer->release();
-
-    if (_camera)
-        _camera->release();
 }
 
-void ModelViewer::onTouchsMovedThis( const std::vector<Touch*> &touchs, Event *event )
+void ModelViewer::onTouchsMove( const std::vector<Touch*> &touchs, Event *event )
 {
-    if (!touchs.empty())
-    {
-        Size visibleSize = Director::getInstance()->getVisibleSize();
-        Vec2 prelocation = touchs[0]->getPreviousLocationInView();
-        Vec2 location = touchs[0]->getLocationInView();
-        location.x = 2.0 * (location.x) / (visibleSize.width) - 1.0f;
-        location.y = 2.0 * (visibleSize.height - location.y) / (visibleSize.height) - 1.0f;
-        prelocation.x = 2.0 * (prelocation.x) / (visibleSize.width) - 1.0f;
-        prelocation.y = 2.0 * (visibleSize.height - prelocation.y) / (visibleSize.height) - 1.0f;
-
-        Vec3 axes;
-        float angle;
-        trackball(axes, angle, prelocation.x, prelocation.y, location.x, location.y);
-        Quaternion quat(axes, angle);
-        _rotation = quat * _rotation;
-
-        updateCameraTransform();
-    }
+	_vm->onTouchsMove(touchs, event);
 }
 
-void ModelViewer::onMouseScrollThis( Event* event )
+void ModelViewer::onMouseScroll( Event* event )
 {
-    EventMouse *em = dynamic_cast<EventMouse*>(event);
-    if (em)
-    {
-        _distance += em->getScrollY() * _orginDistance * 0.01f;
-
-        updateCameraTransform();
-    }
+	_vm->onMouseScroll(event);
 }
 
-void ModelViewer::onMouseMovedThis( Event* event )
+void ModelViewer::onMouseMove( Event* event )
 {
-    EventMouse *em = dynamic_cast<EventMouse *>(event);
-    if (em)
-    {
-        
-        if (em->getMouseButton() == GLFW_MOUSE_BUTTON_RIGHT)
-        {
-            Size visibleSize = Director::getInstance()->getVisibleSize();
-            Vec2 delta = (em->getLocation() - _preMouseLocation);
-            Mat4 rot;
-            Mat4::createRotation(_rotation, &rot);
-            _center += rot * -Vec3(delta.x / visibleSize.width, (-delta.y) / visibleSize.height, 0.0f) * _orginDistance * 0.1f;
-            updateCameraTransform();
-        }
+	_vm->onMouseMove(event);
+}
 
-        _preMouseLocation = em->getLocation();
-        
-    }
+void ModelViewer::onKeyPressed(EventKeyboard::KeyCode keycode, Event *event)
+{
+	_vm->onKeyPressed(keycode, event);
 }
 
 float ModelViewer::tb_project_to_sphere( float r, float x, float y )
@@ -194,33 +155,6 @@ void ModelViewer::updateCameraTransform()
     _camera->setNodeToParentTransform(result);
 }
 
-void ModelViewer::onKeyPressedThis( EventKeyboard::KeyCode keycode, Event *event )
-{
-    switch (keycode)
-    {
-    case EventKeyboard::KeyCode::KEY_SPACE:
-            resetCamera();
-        break;
-	case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-			changeViewTarget(1);
-		break;
-	case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-			changeViewTarget(-1);
-		break;
-	case EventKeyboard::KeyCode::KEY_UP_ARROW:
-			changeAnim(1);
-		break;
-	case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-			changeAnim(-1);
-		break;
-	case EventKeyboard::KeyCode::KEY_F12:
-		toggleDebugDraw();
-		break;
-    default:
-        break;
-    }
-}
-
 void ModelViewer::resetCamera()
 {
     _distance = _orginDistance;
@@ -237,7 +171,6 @@ void ModelViewer::initCamera()
 	_camera->setCameraFlag(CameraFlag::USER1);
 	_camera->setPosition3D(Vec3(0.0f, 0.0f, 10.0f));
 	_camera->lookAt(Vec3::ZERO, Vec3::UNIT_Y);
-	_camera->retain();
 	_camera->setCameraMask((unsigned short)CameraFlag::USER1);
 	addChild(_camera);
 }
@@ -499,6 +432,17 @@ bool ModelViewer::checkAnimNameLegal(const string& animName)
 
 	return result;
 }
+
+Entity* ModelViewer::getTarget()
+{
+	if (_currViewTargetIdx >= 0 && _currViewTargetIdx < _viewTargetList.size())
+	{
+		return _viewTargetList.at(_currViewTargetIdx);
+	}
+	
+	return nullptr;
+}
+
 
 
 

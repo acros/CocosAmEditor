@@ -150,6 +150,9 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\Utils\DataHandler.cpp" />
     <ClCompile Include="..\Classes\Utils\DrawNode3D.cpp" />
     <ClCompile Include="..\Classes\Viewer\ModelViewer.cpp" />
+    <ClCompile Include="..\Classes\Viewer\ViewMode\CameraControlViewMode.cpp" />
+    <ClCompile Include="..\Classes\Viewer\ViewMode\NormalViewMode.cpp" />
+    <ClCompile Include="..\Classes\Viewer\ViewMode\ViewMode.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +161,9 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\Ui\UiPage.h" />
     <ClInclude Include="..\Classes\Utils\DrawNode3D.h" />
     <ClInclude Include="..\Classes\Viewer\ModelViewer.h" />
+    <ClInclude Include="..\Classes\Viewer\ViewMode\CameraControlViewMode.h" />
+    <ClInclude Include="..\Classes\Viewer\ViewMode\NormalViewMode.h" />
+    <ClInclude Include="..\Classes\Viewer\ViewMode\ViewMode.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>

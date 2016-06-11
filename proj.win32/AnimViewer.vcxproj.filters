@@ -51,6 +51,15 @@
     <ClCompile Include="..\Classes\Viewer\ModelViewer.cpp">
       <Filter>src\Viewer</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Viewer\ViewMode\NormalViewMode.cpp">
+      <Filter>src\Viewer\ViewMode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Viewer\ViewMode\CameraControlViewMode.cpp">
+      <Filter>src\Viewer\ViewMode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Viewer\ViewMode\ViewMode.cpp">
+      <Filter>src\Viewer\ViewMode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -70,6 +79,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Viewer\ModelViewer.h">
       <Filter>src\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Viewer\ViewMode\ViewMode.h">
+      <Filter>src\Viewer\ViewMode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Viewer\ViewMode\NormalViewMode.h">
+      <Filter>src\Viewer\ViewMode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Viewer\ViewMode\CameraControlViewMode.h">
+      <Filter>src\Viewer\ViewMode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
