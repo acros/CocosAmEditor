@@ -27,16 +27,36 @@ void NormalViewMode::onTouchsMove(const std::vector<Touch*> &touchs, Event *even
 {
 	if (!touchs.empty())
 	{
-		Sprite3D* spr = _viewer.getTarget()->getSprite3d();
-		Mat4 prevMat = spr->getNodeToParentTransform();
-
-		Vec3 localYaxis,localXaxis;
-		prevMat.getUpVector(&localYaxis);
-		prevMat.getRightVector(&localXaxis);
-
 		Vec2 ds = touchs.at(0)->getDelta();
-		prevMat.rotate(localYaxis, ds.x *  0.03f);		//Choose an acceptable rotate speed
-		spr->setNodeToParentTransform(prevMat);
+		Sprite3D* spr = _viewer.getTarget()->getSprite3d();
+
+		if (_altPressed)
+		{
+			//Move target around
+			const Mat4& camMat = _viewer.getCamera()->getNodeToWorldTransform();
+			Vec3 rightDir,upDir;
+			camMat.getRightVector(&rightDir);
+			camMat.getUpVector(&upDir);
+			rightDir.normalize();
+			upDir.normalize();
+
+			Vec3 pos = spr->getPosition3D();
+			pos += (ds.x * 0.02f * rightDir);
+			pos += (ds.y* 0.014 * upDir);
+
+			spr->setPosition3D(pos);
+		}
+		else
+		{
+			//Target Rotate
+			Mat4 prevMat = spr->getNodeToParentTransform();
+
+			Vec3 localYaxis, localXaxis;
+			prevMat.getUpVector(&localYaxis);
+
+			prevMat.rotate(localYaxis, ds.x *  0.03f);		//Choose an acceptable rotate speed
+			spr->setNodeToParentTransform(prevMat);
+		}
 	}
 }
 
@@ -54,8 +74,7 @@ void NormalViewMode::onMouseScroll(Event* event)
 		Sprite3D* spr = _viewer.getTarget()->getSprite3d();
 		Vec3 pos = spr->getPosition3D();
 
-		static float scale = 1.f;
-		spr->setPosition3D(fdDir *dy * scale + pos);
+		spr->setPosition3D(fdDir *dy + pos);
 	}
 }
 

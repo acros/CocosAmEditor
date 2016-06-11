@@ -13,7 +13,7 @@ enum class ViewModeType{
 
 class ViewMode : public Ref{
 protected:
-	ViewMode(ModelViewer& viewer):_viewer(viewer)	{}
+	ViewMode(ModelViewer& viewer) :_viewer(viewer), _altPressed(false)	{}
 	virtual ~ViewMode()	{}
 
 public:
@@ -25,8 +25,12 @@ public:
 	virtual void onMouseScroll(Event* event)=0;
 	virtual void onMouseMove(Event* event)=0;
 	virtual void onKeyPressed(EventKeyboard::KeyCode keycode, Event *event);
+	virtual void onKeyReleased(EventKeyboard::KeyCode keycode, Event *event);
 
 protected:
 	ModelViewer&	_viewer;
 	ViewModeType	_type;
+
+	//Key flag
+	bool	_altPressed;
 };

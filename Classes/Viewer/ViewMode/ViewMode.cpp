@@ -39,6 +39,21 @@ void ViewMode::onKeyPressed(EventKeyboard::KeyCode keycode, Event *event)
 	case EventKeyboard::KeyCode::KEY_F12:
 		_viewer.toggleDebugDraw();
 		break;
+	case EventKeyboard::KeyCode::KEY_ALT:
+		_altPressed = true;
+		break;
+	default:
+		break;
+	}
+}
+
+void ViewMode::onKeyReleased(EventKeyboard::KeyCode keycode, Event *event)
+{
+	switch (keycode)
+	{
+	case EventKeyboard::KeyCode::KEY_ALT:
+		_altPressed = false;
+		break;
 	default:
 		break;
 	}

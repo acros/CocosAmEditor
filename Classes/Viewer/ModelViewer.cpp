@@ -47,6 +47,7 @@ void ModelViewer::initInput()
 
 	auto listenerkeyboard = EventListenerKeyboard::create();
 	listenerkeyboard->onKeyPressed = CC_CALLBACK_2(ModelViewer::onKeyPressed, this);
+	listenerkeyboard->onKeyReleased = CC_CALLBACK_2(ModelViewer::onKeyReleased, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listenerkeyboard, this);
 }
 
@@ -105,6 +106,12 @@ void ModelViewer::onMouseMove( Event* event )
 void ModelViewer::onKeyPressed(EventKeyboard::KeyCode keycode, Event *event)
 {
 	_vm->onKeyPressed(keycode, event);
+}
+
+void ModelViewer::onKeyReleased(EventKeyboard::KeyCode keycode, Event *event)
+{
+	_vm->onKeyReleased(keycode, event);
+
 }
 
 float ModelViewer::tb_project_to_sphere( float r, float x, float y )

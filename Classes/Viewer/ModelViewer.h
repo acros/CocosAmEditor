@@ -64,7 +64,8 @@ protected:
 	void onMouseScroll(Event* event);
 	void onMouseMove(Event* event);
 	void onKeyPressed(EventKeyboard::KeyCode keycode, Event *event);
-
+	void onKeyReleased(EventKeyboard::KeyCode keycode, Event *event);
+	
 private:
 	bool _debugDraw;
 
