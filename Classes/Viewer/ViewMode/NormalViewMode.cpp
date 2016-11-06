@@ -1,26 +1,28 @@
 #include "NormalViewMode.h"
 #include "Entity/Entity.h"
 
-NormalViewMode* NormalViewMode::create(ModelViewer& mv)
+NormalViewMode* NormalViewMode::create(ModelViewer& mv,Camera& cam)
 {
-	NormalViewMode *pRet = new(std::nothrow) NormalViewMode(mv);
+	NormalViewMode *pRet = new(std::nothrow) NormalViewMode(mv,cam);
 	if (pRet)
 	{
 		pRet->autorelease();
 		return pRet;
 	}
-	else
-	{
-		delete pRet;
-		pRet = nullptr;
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
-NormalViewMode::NormalViewMode(ModelViewer& viewer) 
-	: ViewMode(viewer)
+NormalViewMode::NormalViewMode(ModelViewer& viewer, Camera& cam)
+	: ViewMode(viewer,cam)
+	, _MoveViewInPlane(false)
 {
 	_type = ViewModeType::Normal;
+}
+
+NormalViewMode::~NormalViewMode()
+{
+
 }
 
 void NormalViewMode::onTouchsMove(const std::vector<Touch*> &touchs, Event *event)
@@ -33,7 +35,7 @@ void NormalViewMode::onTouchsMove(const std::vector<Touch*> &touchs, Event *even
 		if (_altPressed)
 		{
 			//Move target around
-			const Mat4& camMat = _viewer.getCamera()->getNodeToWorldTransform();
+			const Mat4& camMat = _mainCam.getNodeToWorldTransform();
 			Vec3 rightDir,upDir;
 			camMat.getRightVector(&rightDir);
 			camMat.getUpVector(&upDir);
@@ -66,7 +68,7 @@ void NormalViewMode::onMouseScroll(Event* event)
 	if (em)
 	{
 		float dy = em->getScrollY();
-		const Mat4 camMat = _viewer.getCamera()->getNodeToWorldTransform();
+		const Mat4 camMat = _mainCam.getNodeToWorldTransform();
 		Vec3 fdDir;
 		camMat.getForwardVector(&fdDir);
 		fdDir.normalize();
@@ -80,19 +82,59 @@ void NormalViewMode::onMouseScroll(Event* event)
 
 void NormalViewMode::onMouseMove(Event* event)
 {
+	if (_MoveViewInPlane)
+	{
+		EventMouse* ev = static_cast<EventMouse*>(event);
+		if (_prevMousePos.isZero())
+		{
+			_prevMousePos = ev->getLocation();
+			return;
+		}
 
+		Vec2 deltaDis = ev->getLocation() - _prevMousePos ;
+		_prevMousePos = ev->getLocation();
+
+		//Calc the plane 
+		Vec3  up, forward;
+		const Mat4& camMat = _mainCam.getNodeToParentTransform();
+		camMat.getUpVector(&up);
+		up.normalize();
+
+		Vec3 pos = _mainCam.getPosition3D();
+		forward = _viewer.getTarget()->getSprite3d()->getPosition3D();
+		forward -= pos;
+		Vec3 right;
+		Vec3::cross(up,forward, &right);
+		right.normalize();
+
+		float scaleValue = 0.2f;
+		pos += scaleValue * (deltaDis.x * right + deltaDis.y * up);
+		_mainCam.setPosition3D(pos);
+	}
 }
 void NormalViewMode::onKeyPressed(EventKeyboard::KeyCode keycode, Event *event)
 {
 	ViewMode::onKeyPressed(keycode, event);
 
-	switch (keycode)
+	/*
+		switch (keycode)
+		{
+		default:
+		break;
+		}
+	*/
+}
+
+void NormalViewMode::onMouseButtonEvent(Event* event, bool down)
+{
+	//Left button is handled in Touch event
+	EventMouse* ev = static_cast<EventMouse*>(event);
+
+	//Right button
+	if (ev->getMouseButton() == 1)
 	{
-	case EventKeyboard::KeyCode::KEY_SPACE:
-		//TODO: reset model
-//		_viewer.resetCamera();
-		break;
-	default:
-		break;
+		_MoveViewInPlane = down;
+		_prevMousePos.setZero();
 	}
+	
 }
