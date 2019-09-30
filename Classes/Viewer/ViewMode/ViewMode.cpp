@@ -86,7 +86,7 @@ void ViewMode::updateCameraSet(Sprite3D* target)
 	else
 	{
 		float radius = (corners[0] - corners[5]).length();
-		_orginCenter = aabb.getCenter();
+		_orginCenter = (aabb._min + aabb._max) / 2;
 		_orginDistance = radius;
 	}
 
